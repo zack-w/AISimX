@@ -1,12 +1,15 @@
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Graphics;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import javax.swing.*;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.util.Random;
+
+import javax.swing.JFrame;
+import javax.swing.JPanel;
 
 class Direction {
 	static int NORTH = 1;
@@ -17,7 +20,7 @@ class Direction {
 
 class Ball {
 	Size size = new Size( 5, 5 );
-	Pos pos = new Pos( 600, 10 );
+	Pos pos = new Pos( 400, 500 );
 	Pos velocity = new Pos( 0, -5 );
 }
 
@@ -62,7 +65,7 @@ class Pos {
 		if( collideWithBar )
 			velocity.y = (velocity.y == 0) ? -1 : velocity.y;
 		
-		// Boundry collision checking
+		// Boundary collision checking
 		if( velocity.x != 0 || velocity.y != 0 ) {
 			boolean terminate = false;
 			
@@ -102,13 +105,66 @@ class Pos {
 			velocity.x += game.bar.velocity.x;
 			move( velocity, changeVelocity, collideWithBar, s );
 		}
+		
+		//Object collision checking
+		for (int i = 0; i <1000 ; i++)
+		{
+			Brick a = game.bricks[i];
+		// for( Brick b : game.bricks ) 
+		// {
+			 if (a!= null){
+				 if(this.isWithin(a.pos, a.size))
+			 	{
+					//if the ball hits the side of the block
+					if (this.isSide(a.pos, a.size))
+					{
+						velocity.x = velocity.x * -1;
+					 	move( velocity, changeVelocity, collideWithBar, s );
+					}
+					// if hits top or bottom of a block
+					else {
+				 	
+				 	velocity.y = velocity.y * -1;
+				 	move( velocity, changeVelocity, collideWithBar, s );
+					}
+				 	
+				 	
+				 	
+				 	Brick[] copy = new Brick[ game.bricks.length ];
+
+				 	//deletes brick when hit
+				 	for (int k = 0; k < i; k ++ )
+				 	{
+				 		copy[k] = game.bricks[k];
+				 	}
+				 	for (int j = i+1; j <game.bricks.length; j++ )
+				 	{
+				 		copy[j-1] = game.bricks[j];
+				 	}
+				 	game.bricks = copy;
+				 	i--;
+			 	}
+			 }
+		 }
+
+		
 	}
 	
 	public void move( Pos velocity ) {
 		this.move( velocity, true, true, new Size( 0, 0 ) );
 	}
 	
-	// Collisions with objects
+	// Collisions with objects not perfect fix
+	public boolean isSide (Pos pos, Size bounds){
+		if ((Math.abs(this.x - pos.x) <= 3) || (Math.abs(pos.x+bounds.w - this.x)<=3))
+		{
+			return true;
+		}
+		return false;
+	}
+	//public boolean isBotorTop(Pos pos, Size bounds){
+				
+	//}
 	public boolean isWithin( Pos pos, Size bounds ) {
 		if( (this.x > pos.x && ((pos.x + bounds.w) > this.x)) &&
 			(this.y > pos.y && ((pos.y + bounds.h) > this.y)) )
@@ -122,6 +178,7 @@ class renderThread extends Thread {
 
 	public void run() {
 		JFrame frame = new JFrame( "Breakout" );
+		
 		frame.addWindowListener( new WindowAdapter() {
 
 			public void windowClosing(WindowEvent e) {
@@ -164,6 +221,7 @@ class renderThread extends Thread {
 		frame.setLayout( new BorderLayout() );
 		frame.add( mainPanel, BorderLayout.CENTER );
 		frame.pack();
+		frame.setResizable(false);
 		frame.setVisible(true);
 		
 		frame.addKeyListener( new KeyListener() {
@@ -249,10 +307,10 @@ public class game {
 				Brick newBrick = new Brick();
 				newBrick.pos = new Pos( x, y );
 				bricks[ i++ ] = newBrick;
-				y += newBrick.size.h + 5;
+				y += newBrick.size.h +30 ;
 			}
 			
-			x += 60;
+			x += 100;
 			y = 10;
 		}
 		
